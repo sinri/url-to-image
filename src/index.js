@@ -82,6 +82,7 @@ function render(url, filePath, opts) {
         if (killTimer) {
             clearTimeout(killTimer);
         }
+        console.log("finally...");
     });
 };
 

@@ -231,3 +231,9 @@ This module was inspired by
 # License
 
 MIT
+
+-----
+
+Phantom.js seems not in maintain now (unconfirmed) while images in webp not support and so on, a lot of hole to fill...
+
+I might have to change tool.

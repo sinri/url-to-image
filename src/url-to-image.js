@@ -37,6 +37,8 @@ function renderPage(opts) {
     var forceRenderTimeout;
     var dynamicRenderTimeout;
 
+    var sinriGuessTimeCost = 0;
+
     var page = webPage.create();
     page.viewportSize = {
         width: opts.width,
@@ -59,7 +61,14 @@ function renderPage(opts) {
             log('<-', response.status, response.url);
             requestCount -= 1;
             if (requestCount === 0) {
-                dynamicRenderTimeout = setTimeout(renderAndExit, opts.requestTimeout);
+                guessTime(opts.requestTimeout);
+                //clearTimeout(dynamicRenderTimeout);
+                dynamicRenderTimeout = setTimeout(function () {
+                        log("CAUSED BY onResourceReceived requestTimeout for url ", response.url, opts.requestTimeout);
+                        renderAndExit();
+                    },
+                    opts.requestTimeout
+                );
             }
         }
     };
@@ -69,7 +78,18 @@ function renderPage(opts) {
             log('Unable to load url:', opts.url);
             phantom.exit(10);
         } else {
-            forceRenderTimeout = setTimeout(renderAndExit, opts.maxTimeout);
+            // scroll
+            page.evaluate(function () {
+                // 这个就是为了防止被滚动延迟加载的坑
+                //document.body.scrollTop=10000;
+                window.scrollTo(0, 5000);
+            });
+
+            guessTime(opts.maxTimeout);
+            forceRenderTimeout = setTimeout(function () {
+                log("CAUSED BY open maxTimeout", opts.maxTimeout);
+                renderAndExit();
+            }, opts.maxTimeout);
         }
     });
 
@@ -89,8 +109,15 @@ function renderPage(opts) {
                 str += ' '
             });
 
-            console.log(str);
+            var str_date = (new Date());
+
+            console.log("[" + str_date + "] " + str);
         }
+    }
+
+    function guessTime(newDelay) {
+        sinriGuessTimeCost = Math.max(new Date().getTime() * 1 + newDelay * 1, sinriGuessTimeCost);
+        log("Now guess end time to be ", sinriGuessTimeCost, new Date(sinriGuessTimeCost));
     }
 
     function renderAndExit() {
